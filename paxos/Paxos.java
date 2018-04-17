@@ -1,3 +1,4 @@
+package paxos;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
@@ -154,16 +155,19 @@ public class Paxos implements PaxosRMI, Runnable{
      * where z_i is the highest number ever passed
      * to Done() on peer i. A peers z_i is -1 if it has
      * never called Done().
+
      * Paxos is required to have forgotten all information
      * about any instances it knows that are < Min().
      * The point is to free up memory in long-running
      * Paxos-based servers.
+
      * Paxos peers need to exchange their highest Done()
      * arguments in order to implement Min(). These
      * exchanges can be piggybacked on ordinary Paxos
      * agreement protocol messages, so it is OK if one
      * peers Min does not reflect another Peers Done()
      * until after the next instance is agreed to.
+
      * The fact that Min() is defined as a minimum over
      * all Paxos peers means that Min() cannot increase until
      * all peers have been heard from. So if a peer is dead
