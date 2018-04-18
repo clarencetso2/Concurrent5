@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static paxos.State.Decided;
+import static paxos.State.Pending;
 
 /**
  * This class is the main class you need to implement paxos instances.
@@ -24,11 +25,18 @@ public class Paxos implements PaxosRMI, Runnable{
     AtomicBoolean unreliable;// for testing
 
     ReentrantLock lamportLock;
-    int lamportClock;
+    int lamportClock = 0;
 
     // Your data here
     int seq;
     Object value;
+    State state;
+
+    int highestPrepare = -1;
+    int highestAccept = -1;
+
+    Object highestValueAcceptor = null;
+    Object highestValueProposer = null;
 
 
     /**
@@ -47,6 +55,7 @@ public class Paxos implements PaxosRMI, Runnable{
 
         // Your initialization code here
         this.lamportClock = 0;
+        this.state = Pending;
 
         // register peers, do not modify this part
         try{
@@ -126,37 +135,71 @@ public class Paxos implements PaxosRMI, Runnable{
         int localSeq = seq;
         Object localVal = value;
 
+        int count1 = 0;
+        int count2 = 0;
+
         //Need to keep track of the state
-        while(state!=Decided){
-            synchronized(this) {
+        while(state!=Decided) {
+            synchronized (this) {
                 lamportClock++;
             }
 
-            for(int i=0 ; i < peers.length; i++){
-                Call("Prepare", new Request(), i); //TODO: MAKE CONSTRUCTOR FOR REQUEST, SEND LAMPORTCLOCK WITH REQUEST
+            for (int i = 0; i < peers.length; i++) {
+                Response response = Call("Prepare", new Request(localSeq, localVal, lamportClock), i); //TODO: MAKE CONSTRUCTOR FOR REQUEST, SEND LAMPORTCLOCK WITH REQUEST
+                if (response.ack) {
+                    count1++;
+                    if (count1 > (peers.length / 2) + 1) {
+                        if (response.acceptNum > highestPrepare) {
+                            highestPrepare = response.acceptNum;
+                            highestValueProposer = response.value;
 
+                        }
+                        Response response2 = Call("Accept", new Request(localSeq, highestValueProposer, highestPrepare), i);
+                        if (response2.ack) {
+                            count2++;
+                            if (count2 > (peers.length / 2) + 1) {
+                                Call("Decide", new Request(localSeq, highestValueProposer, highestPrepare), i);
+                            }
+                        }
+                    }
+                }
             }
         }
-
 
         retStatus status = Status(localSeq);
     }
 
     // RMI handler
     public Response Prepare(Request req){
-        // your code here
+        //might need to break ties with pid
+        if(req.propNum > highestPrepare) {
+            highestPrepare = req.propNum;
+            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+            return response;
+        }
 
-        return null;
+        else{
+            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+        }
     }
 
     public Response Accept(Request req){
         // your code here
+        if(req.propNum > highestPrepare) {
+            highestAccept = req.propNum;
+            highestPrepare = req.propNum;
+            highestValueAcceptor = req.value;
+            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+            return response;
+        }
 
-        return null;
+        else{
+            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+        }
     }
 
     public Response Decide(Request req){
-        // your code here
+        state = Decided;
 
         return null;
     }

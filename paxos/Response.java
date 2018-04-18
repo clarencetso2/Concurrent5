@@ -9,7 +9,17 @@ import java.io.Serializable;
 public class Response implements Serializable {
     static final long serialVersionUID=2L;
     // your data here
+    boolean ack;
+    int propNum;
+    Object value;
+    int acceptNum;
 
 
     // Your constructor and methods here
+    public Response(boolean ack, int propNum, int acceptNum, Object value){
+        this.ack = ack;
+        this.propNum = propNum;
+        this.value = value;
+        this.acceptNum = acceptNum;
+    }
 }
