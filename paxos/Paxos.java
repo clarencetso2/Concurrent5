@@ -2,6 +2,8 @@ package paxos;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +40,8 @@ public class Paxos implements PaxosRMI, Runnable{
     Object highestValueAcceptor = null;
     Object highestValueProposer = null;
 
+    Map<Integer, Object> decidedValues;
+
 
     /**
      * Call the constructor to create a Paxos peer.
@@ -56,6 +60,7 @@ public class Paxos implements PaxosRMI, Runnable{
         // Your initialization code here
         this.lamportClock = 0;
         this.state = Pending;
+        this.decidedValues = new HashMap<Integer,Object>();
 
         // register peers, do not modify this part
         try{
@@ -145,7 +150,7 @@ public class Paxos implements PaxosRMI, Runnable{
             }
 
             for (int i = 0; i < peers.length; i++) {
-                Response response = Call("Prepare", new Request(localSeq, localVal, lamportClock), i); //TODO: MAKE CONSTRUCTOR FOR REQUEST, SEND LAMPORTCLOCK WITH REQUEST
+                Response response = Call("Prepare", new Request(localSeq, localVal, lamportClock), i);
                 if (response.ack) {
                     count1++;
                     if (count1 > (peers.length / 2) + 1) {
@@ -158,11 +163,14 @@ public class Paxos implements PaxosRMI, Runnable{
                         if (response2.ack) {
                             count2++;
                             if (count2 > (peers.length / 2) + 1) {
-                                Call("Decide", new Request(localSeq, highestValueProposer, highestPrepare), i);
+                                break;
                             }
                         }
                     }
                 }
+            }
+            for(int j = 0; j < peers.length; j++){
+                Call("Decide", new Request(localSeq, highestValueProposer, highestPrepare), j);
             }
         }
 
@@ -200,7 +208,7 @@ public class Paxos implements PaxosRMI, Runnable{
 
     public Response Decide(Request req){
         state = Decided;
-
+        decidedValues.put(req.seq, req.value);
         return null;
     }
 
