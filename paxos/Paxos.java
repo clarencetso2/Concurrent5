@@ -5,6 +5,8 @@ import java.rmi.registry.Registry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static paxos.State.Decided;
+
 /**
  * This class is the main class you need to implement paxos instances.
  */
@@ -21,7 +23,12 @@ public class Paxos implements PaxosRMI, Runnable{
     AtomicBoolean dead;// for testing
     AtomicBoolean unreliable;// for testing
 
+    ReentrantLock lamportLock;
+    int lamportClock;
+
     // Your data here
+    int seq;
+    Object value;
 
 
     /**
@@ -39,7 +46,7 @@ public class Paxos implements PaxosRMI, Runnable{
         this.unreliable = new AtomicBoolean(false);
 
         // Your initialization code here
-
+        this.lamportClock = 0;
 
         // register peers, do not modify this part
         try{
@@ -107,27 +114,51 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public void Start(int seq, Object value){
         // Your code here
+        this.seq = seq;
+        this.value = value;
+        Thread t = new Thread(this);
+        t.start();
     }
 
     @Override
     public void run(){
         //Your code here
+        int localSeq = seq;
+        Object localVal = value;
+
+        //Need to keep track of the state
+        while(state!=Decided){
+            synchronized(this) {
+                lamportClock++;
+            }
+
+            for(int i=0 ; i < peers.length; i++){
+                Call("Prepare", new Request(), i); //TODO: MAKE CONSTRUCTOR FOR REQUEST, SEND LAMPORTCLOCK WITH REQUEST
+
+            }
+        }
+
+
+        retStatus status = Status(localSeq);
     }
 
     // RMI handler
     public Response Prepare(Request req){
         // your code here
 
+        return null;
     }
 
     public Response Accept(Request req){
         // your code here
 
+        return null;
     }
 
     public Response Decide(Request req){
         // your code here
 
+        return null;
     }
 
     /**
@@ -148,6 +179,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public int Max(){
         // Your code here
+        return 0;
     }
 
     /**
@@ -181,6 +213,7 @@ public class Paxos implements PaxosRMI, Runnable{
     public int Min(){
         // Your code here
 
+        return 0;
     }
 
 
@@ -195,6 +228,7 @@ public class Paxos implements PaxosRMI, Runnable{
     public retStatus Status(int seq){
         // Your code here
 
+        return null;
     }
 
     /**
