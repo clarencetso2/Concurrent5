@@ -4,7 +4,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static paxos.State.Decided;
@@ -16,6 +18,7 @@ import static paxos.State.Pending;
 public class Paxos implements PaxosRMI, Runnable{
 
     ReentrantLock mutex;
+    Condition condition = mutex.newCondition();
     String[] peers; // hostname
     int[] ports; // host port
     int me; // index into peers[]
@@ -32,7 +35,6 @@ public class Paxos implements PaxosRMI, Runnable{
     // Your data here
     int seq;
     Object value;
-    State state;
 
     int highestPrepare = -1;
     int highestAccept = -1;
@@ -41,6 +43,8 @@ public class Paxos implements PaxosRMI, Runnable{
     Object highestValueProposer = null;
 
     Map<Integer, Object> decidedValues;
+    Map<Integer, Integer> highestProposedNumber;
+    Map<Integer, State> states;
 
 
     /**
@@ -59,8 +63,10 @@ public class Paxos implements PaxosRMI, Runnable{
 
         // Your initialization code here
         this.lamportClock = 0;
-        this.state = Pending;
-        this.decidedValues = new HashMap<Integer,Object>();
+        this.decidedValues = new ConcurrentHashMap<Integer,Object>();
+        this.highestProposedNumber = new ConcurrentHashMap<Integer, Integer>();
+        this.states = new ConcurrentHashMap<Integer, State>();
+
 
         // register peers, do not modify this part
         try{
@@ -127,9 +133,12 @@ public class Paxos implements PaxosRMI, Runnable{
      * is reached.
      */
     public void Start(int seq, Object value){
+
         // Your code here
+        mutex.lock();
         this.seq = seq;
         this.value = value;
+
         Thread t = new Thread(this);
         t.start();
     }
@@ -137,30 +146,36 @@ public class Paxos implements PaxosRMI, Runnable{
     @Override
     public void run(){
         //Your code here
+        mutex.unlock();
         int localSeq = seq;
         Object localVal = value;
+
+        highestProposedNumber.put(localSeq, 0);
+        states.put(localSeq, Pending);
 
         int count1 = 0;
         int count2 = 0;
 
         //Need to keep track of the state
-        while(state!=Decided) {
+        while(states.get(localSeq)!=Decided) {
             synchronized (this) {
+                lamportClock = highestProposedNumber.get(seq);
                 lamportClock++;
             }
 
             for (int i = 0; i < peers.length; i++) {
-                Response response = Call("Prepare", new Request(localSeq, localVal, lamportClock), i);
-                if (response.ack) {
+                Response prepResponse = Call("Prepare", new Request(localSeq, localVal, lamportClock), i);
+                if (prepResponse.ack) {
                     count1++;
+
                     if (count1 > (peers.length / 2) + 1) {
-                        if (response.acceptNum > highestPrepare) {
-                            highestPrepare = response.acceptNum;
-                            highestValueProposer = response.value;
+                        if (prepResponse.acceptNum > highestProposedNumber.get(localSeq)) {
+                            highestProposedNumber.put(localSeq, prepResponse.acceptNum);
+                            decidedValues.put(localSeq, prepResponse.value);
 
                         }
-                        Response response2 = Call("Accept", new Request(localSeq, highestValueProposer, highestPrepare), i);
-                        if (response2.ack) {
+                        Response accResponse = Call("Accept", new Request(localSeq, decidedValues.get(localSeq), highestProposedNumber.get(localSeq)), i);
+                        if (accResponse.ack) {
                             count2++;
                             if (count2 > (peers.length / 2) + 1) {
                                 break;
@@ -170,7 +185,7 @@ public class Paxos implements PaxosRMI, Runnable{
                 }
             }
             for(int j = 0; j < peers.length; j++){
-                Call("Decide", new Request(localSeq, highestValueProposer, highestPrepare), j);
+                Response decideResponse = Call("Decide", new Request(localSeq, decidedValues.get(localSeq), highestProposedNumber.get(localSeq)), j);
             }
         }
 
@@ -207,8 +222,9 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
-        state = Decided;
         decidedValues.put(req.seq, req.value);
+        states.put(req.seq, Decided);
+
         return null;
     }
 
