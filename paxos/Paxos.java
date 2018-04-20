@@ -2,7 +2,6 @@ package paxos;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,7 +16,7 @@ import static paxos.State.Pending;
  */
 public class Paxos implements PaxosRMI, Runnable{
 
-    ReentrantLock mutex;
+    ReentrantLock mutex = new ReentrantLock();
     Condition condition = mutex.newCondition();
     String[] peers; // hostname
     int[] ports; // host port
@@ -39,12 +38,18 @@ public class Paxos implements PaxosRMI, Runnable{
     int highestPrepare = -1;
     int highestAccept = -1;
 
+    int max;
+    int min;
+
     Object highestValueAcceptor = null;
     Object highestValueProposer = null;
 
     Map<Integer, Object> decidedValues;
-    Map<Integer, Integer> highestProposedNumber;
+    Map<Integer, Integer> proposer_n;
     Map<Integer, State> states;
+    Map<Integer, Integer> accept_n;
+    Map<Integer, Object> accept_v;
+    Map<Integer, Integer> n;
 
 
     /**
@@ -63,10 +68,17 @@ public class Paxos implements PaxosRMI, Runnable{
 
         // Your initialization code here
         this.lamportClock = 0;
-        this.decidedValues = new ConcurrentHashMap<Integer,Object>();
-        this.highestProposedNumber = new ConcurrentHashMap<Integer, Integer>();
-        this.states = new ConcurrentHashMap<Integer, State>();
 
+        this.decidedValues = new ConcurrentHashMap<Integer,Object>();
+        this.proposer_n = new ConcurrentHashMap<Integer, Integer>();
+        this.states = new ConcurrentHashMap<Integer, State>();
+        this.accept_n = new ConcurrentHashMap<Integer, Integer>();
+        this.accept_v = new ConcurrentHashMap<Integer, Object>();
+        this.n = new ConcurrentHashMap<Integer, Integer>();
+
+
+        this.max = -1;
+        this.min = -1;
 
         // register peers, do not modify this part
         try{
@@ -95,17 +107,18 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public Response Call(String rmi, Request req, int id){
         Response callReply = null;
-
         PaxosRMI stub;
         try{
             Registry registry=LocateRegistry.getRegistry(this.ports[id]);
             stub=(PaxosRMI) registry.lookup("Paxos");
-            if(rmi.equals("Prepare"))
+            if(rmi.equals("Prepare")) {
                 callReply = stub.Prepare(req);
+            }
             else if(rmi.equals("Accept"))
                 callReply = stub.Accept(req);
-            else if(rmi.equals("Decide"))
+            else if(rmi.equals("Decide")) {
                 callReply = stub.Decide(req);
+            }
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
@@ -135,7 +148,12 @@ public class Paxos implements PaxosRMI, Runnable{
     public void Start(int seq, Object value){
 
         // Your code here
-        mutex.lock();
+//        mutex.lock();
+//        try {
+//            condition.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         this.seq = seq;
         this.value = value;
 
@@ -146,11 +164,12 @@ public class Paxos implements PaxosRMI, Runnable{
     @Override
     public void run(){
         //Your code here
-        mutex.unlock();
+        //condition.notifyAll();
+        //mutex.unlock();
         int localSeq = seq;
         Object localVal = value;
 
-        highestProposedNumber.put(localSeq, 0);
+        n.put(localSeq, -1);
         states.put(localSeq, Pending);
 
         int count1 = 0;
@@ -159,71 +178,90 @@ public class Paxos implements PaxosRMI, Runnable{
         //Need to keep track of the state
         while(states.get(localSeq)!=Decided) {
             synchronized (this) {
-                lamportClock = highestProposedNumber.get(seq);
+                lamportClock = n.get(seq);
                 lamportClock++;
+                n.put(localSeq, lamportClock);
             }
 
             for (int i = 0; i < peers.length; i++) {
-                Response prepResponse = Call("Prepare", new Request(localSeq, localVal, lamportClock), i);
+                Response prepResponse = Call("Prepare", new Request(localSeq, localVal, n.get(localSeq)), i);
+                System.out.println("Response: " + prepResponse.acceptNum);
                 if (prepResponse.ack) {
                     count1++;
 
                     if (count1 > (peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum > highestProposedNumber.get(localSeq)) {
-                            highestProposedNumber.put(localSeq, prepResponse.acceptNum);
-                            decidedValues.put(localSeq, prepResponse.value);
+                        if (prepResponse.acceptNum > n.get(localSeq)) {
+                            n.put(localSeq, prepResponse.acceptNum);
+                            localVal = prepResponse.value;
 
                         }
-                        Response accResponse = Call("Accept", new Request(localSeq, decidedValues.get(localSeq), highestProposedNumber.get(localSeq)), i);
-                        if (accResponse.ack) {
-                            count2++;
-                            if (count2 > (peers.length / 2) + 1) {
-                                break;
+                        for(int j = 0; j < peers.length; j++) {
+                            Response accResponse = Call("Accept", new Request(localSeq, localVal, n.get(localSeq)), i);
+                            if (accResponse.ack) {
+                                count2++;
+                                if (count2 > (peers.length / 2) + 1) {
+                                    for(int k = 0; k < peers.length; k++){
+                                        Response decideResponse = Call("Decide", new Request(localSeq, localVal, n.get(localSeq)), j);
+                                    }
+                                    i = j = peers.length;
+                                }
                             }
                         }
                     }
                 }
             }
-            for(int j = 0; j < peers.length; j++){
-                Response decideResponse = Call("Decide", new Request(localSeq, decidedValues.get(localSeq), highestProposedNumber.get(localSeq)), j);
-            }
         }
+        //call Done(localSeq)
 
-        retStatus status = Status(localSeq);
+
+        //retStatus status = Status(localSeq);
     }
 
     // RMI handler
     public Response Prepare(Request req){
+        System.out.println("In prepare");
         //might need to break ties with pid
-        if(req.propNum > highestPrepare) {
-            highestPrepare = req.propNum;
-            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+        if(proposer_n.get(req.seq) == null){
+            proposer_n.put(req.seq, req.propNum);
+            System.out.println("sending0 " + req.seq + " " + accept_n.get(req.seq));
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            System.out.println("PREPARING");
+            return response;
+        }
+        if(req.propNum > proposer_n.get(req.seq)) {
+            proposer_n.put(req.seq, req.propNum);
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            System.out.println("sending1");
             return response;
         }
 
         else{
-            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+            System.out.println("sending2");
+
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
         }
     }
 
     public Response Accept(Request req){
         // your code here
-        if(req.propNum > highestPrepare) {
-            highestAccept = req.propNum;
-            highestPrepare = req.propNum;
-            highestValueAcceptor = req.value;
-            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+        if(req.propNum > proposer_n.get(req.seq)) {
+            accept_n.put(req.seq, req.propNum);
+            proposer_n.put(req.seq, req.propNum);
+            accept_v.put(req.seq, req.value);
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
             return response;
         }
 
         else{
-            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
         }
     }
 
     public Response Decide(Request req){
-        decidedValues.put(req.seq, req.value);
         states.put(req.seq, Decided);
+        System.out.println("In decided");
+        decidedValues.put(req.seq, req.value);
+
 
         return null;
     }
@@ -236,6 +274,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public void Done(int seq) {
         // Your code here
+
     }
 
 
@@ -294,8 +333,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public retStatus Status(int seq){
         // Your code here
-
-        return null;
+        return new retStatus(states.get(seq), decidedValues.get(seq));
     }
 
     /**
