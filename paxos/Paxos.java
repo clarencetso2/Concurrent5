@@ -148,107 +148,54 @@ public class Paxos implements PaxosRMI, Runnable{
     public void Start(int seq, Object value){
 
         // Your code here
-//        mutex.lock();
-//        try {
-//            condition.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+
         this.seq = seq;
         this.value = value;
-
-        Thread t = new Thread(this);
+        PaxosRunnble paxosRunnble = new PaxosRunnble(this, seq, value);
+        Thread t = new Thread(paxosRunnble);
         t.start();
     }
 
     @Override
     public void run(){
-        //Your code here
-        //condition.notifyAll();
-        //mutex.unlock();
-        int localSeq = seq;
-        Object localVal = value;
 
-        n.put(localSeq, -1);
-        states.put(localSeq, Pending);
-
-        int count1 = 0;
-        int count2 = 0;
-
-        //Need to keep track of the state
-        while(states.get(localSeq)!=Decided) {
-            synchronized (this) {
-                lamportClock = n.get(seq);
-                lamportClock++;
-                n.put(localSeq, lamportClock);
-            }
-
-            for (int i = 0; i < peers.length; i++) {
-                Response prepResponse = Call("Prepare", new Request(localSeq, localVal, n.get(localSeq)), i);
-                System.out.println("Response: " + prepResponse.acceptNum);
-                if (prepResponse.ack) {
-                    count1++;
-
-                    if (count1 > (peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum > n.get(localSeq)) {
-                            n.put(localSeq, prepResponse.acceptNum);
-                            localVal = prepResponse.value;
-
-                        }
-                        for(int j = 0; j < peers.length; j++) {
-                            Response accResponse = Call("Accept", new Request(localSeq, localVal, n.get(localSeq)), i);
-                            if (accResponse.ack) {
-                                count2++;
-                                if (count2 > (peers.length / 2) + 1) {
-                                    for(int k = 0; k < peers.length; k++){
-                                        Response decideResponse = Call("Decide", new Request(localSeq, localVal, n.get(localSeq)), j);
-                                    }
-                                    i = j = peers.length;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        //call Done(localSeq)
-
-
-        //retStatus status = Status(localSeq);
     }
 
     // RMI handler
     public Response Prepare(Request req){
-        System.out.println("In prepare");
         //might need to break ties with pid
+
+        if(accept_n.get(req.seq) == null)
+            accept_n.put(req.seq, -1);
         if(proposer_n.get(req.seq) == null){
             proposer_n.put(req.seq, req.propNum);
-            System.out.println("sending0 " + req.seq + " " + accept_n.get(req.seq));
-            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
-            System.out.println("PREPARING");
+//            System.out.println("propNum: " + req.propNum + " acc_n: " + accept_n.get(req.seq) + " acc_v: " + accept_v.get(req.seq));
+            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+//            System.out.println(response.ack);
             return response;
         }
         if(req.propNum > proposer_n.get(req.seq)) {
             proposer_n.put(req.seq, req.propNum);
             Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
-            System.out.println("sending1");
+
             return response;
         }
 
         else{
-            System.out.println("sending2");
 
             return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+
         }
     }
 
     public Response Accept(Request req){
         // your code here
-        if(req.propNum > proposer_n.get(req.seq)) {
+        if(req.propNum >= proposer_n.get(req.seq)) {
             accept_n.put(req.seq, req.propNum);
             proposer_n.put(req.seq, req.propNum);
             accept_v.put(req.seq, req.value);
             Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+
             return response;
         }
 
@@ -258,8 +205,8 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
+        System.out.println("Decide call: " + req.seq);
         states.put(req.seq, Decided);
-        System.out.println("In decided");
         decidedValues.put(req.seq, req.value);
 
 
