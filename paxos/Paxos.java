@@ -106,22 +106,30 @@ public class Paxos implements PaxosRMI, Runnable{
      * this function.
      */
     public Response Call(String rmi, Request req, int id){
+        System.out.println("id: " + id);
         Response callReply = null;
         PaxosRMI stub;
         try{
             Registry registry=LocateRegistry.getRegistry(this.ports[id]);
             stub=(PaxosRMI) registry.lookup("Paxos");
             if(rmi.equals("Prepare")) {
+                System.out.println("prepare " + id);
                 callReply = stub.Prepare(req);
             }
-            else if(rmi.equals("Accept"))
+            else if(rmi.equals("Accept")){
+                System.out.println("accept " + id);
                 callReply = stub.Accept(req);
+
+            }
             else if(rmi.equals("Decide")) {
+                System.out.println("decide " + id);
+
                 callReply = stub.Decide(req);
             }
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
+            System.out.println("EXCEPTION");
             return null;
         }
         return callReply;
@@ -205,12 +213,12 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
-        System.out.println("Decide call: " + req.seq);
+        //System.out.println("Decide call: " + req.seq);
+
         states.put(req.seq, Decided);
         decidedValues.put(req.seq, req.value);
 
-
-        return null;
+        return new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
     }
 
     /**

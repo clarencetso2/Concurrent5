@@ -20,14 +20,14 @@
         <entry file="file://$PROJECT_DIR$/paxos/Paxos.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="191">
-              <caret line="207" column="54" lean-forward="false" selection-start-line="207" selection-start-column="54" selection-end-line="207" selection-end-column="54" />
+              <caret line="131" column="42" lean-forward="false" selection-start-line="131" selection-start-column="42" selection-end-line="131" selection-end-column="42" />
               <folding>
-                <element signature="e#9825#9826#0" expanded="true" />
-                <element signature="e#9863#9864#0" expanded="true" />
-                <element signature="e#9897#9898#0" expanded="true" />
-                <element signature="e#9944#9945#0" expanded="true" />
-                <element signature="e#9980#9981#0" expanded="true" />
-                <element signature="e#10024#10025#0" expanded="true" />
+                <element signature="e#10160#10161#0" expanded="true" />
+                <element signature="e#10198#10199#0" expanded="true" />
+                <element signature="e#10232#10233#0" expanded="true" />
+                <element signature="e#10279#10280#0" expanded="true" />
+                <element signature="e#10315#10316#0" expanded="true" />
+                <element signature="e#10359#10360#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -43,21 +43,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PaxosTest.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/paxos/PaxosTest.java">
+      <file leaf-file-name="Response.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/paxos/Response.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-252">
-              <caret line="49" column="0" lean-forward="true" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+            <state relative-caret-position="414">
+              <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PaxosRunnble.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="PaxosTest.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/paxos/PaxosTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="316">
+              <caret line="102" column="30" lean-forward="true" selection-start-line="102" selection-start-column="30" selection-end-line="102" selection-end-column="30" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PaxosRunnble.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/paxos/PaxosRunnble.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
-              <caret line="58" column="62" lean-forward="false" selection-start-line="58" selection-start-column="62" selection-end-line="58" selection-end-column="62" />
+            <state relative-caret-position="378">
+              <caret line="61" column="42" lean-forward="false" selection-start-line="61" selection-start-column="42" selection-end-line="61" selection-end-column="42" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -97,17 +107,17 @@
         <option value="$PROJECT_DIR$/kvpaxos/Server.java" />
         <option value="$PROJECT_DIR$/paxos/Request.java" />
         <option value="$PROJECT_DIR$/paxos/Response.java" />
-        <option value="$PROJECT_DIR$/paxos/PaxosTest.java" />
-        <option value="$PROJECT_DIR$/paxos/PaxosRunnble.java" />
         <option value="$PROJECT_DIR$/paxos/Paxos.java" />
+        <option value="$PROJECT_DIR$/paxos/PaxosRunnble.java" />
+        <option value="$PROJECT_DIR$/paxos/PaxosTest.java" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
-    <option name="x" value="65" />
-    <option name="y" value="24" />
-    <option name="width" value="928" />
-    <option name="height" value="1056" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="615" />
+    <option name="y" value="-4" />
+    <option name="width" value="600" />
+    <option name="height" value="294" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -286,39 +296,39 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Pls - 2018.04.20 at 21h 28m 18s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 47m 23s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 21h 28m 30s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 49m 40s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 21h 28m 32s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 52m 27s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 21h 29m 28s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 54m 49s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 03m 14s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 54m 58s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 04m 04s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 55m 48s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 05m 41s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 56m 06s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 07m 04s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 56m 50s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 09m 23s.xml">
+    <history-entry file="Pls - 2018.04.21 at 21h 57m 07s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
-    <history-entry file="Pls - 2018.04.20 at 22h 09m 28s.xml">
+    <history-entry file="Pls - 2018.04.21 at 22h 11m 18s.xml">
       <configuration name="Pls" configurationId="AndroidJUnit" />
     </history-entry>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="24" width="928" height="1056" extended-state="4" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -327,14 +337,14 @@
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31938776" sideWeight="0.5018868" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32878152" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31938776" sideWeight="0.49811321" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2650862" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13261455" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -387,7 +397,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="13" />
+      <option name="time" value="19" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -405,12 +415,12 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#9825#9826#0" expanded="true" />
-            <element signature="e#9863#9864#0" expanded="true" />
-            <element signature="e#9897#9898#0" expanded="true" />
-            <element signature="e#9944#9945#0" expanded="true" />
-            <element signature="e#9980#9981#0" expanded="true" />
-            <element signature="e#10024#10025#0" expanded="true" />
+            <element signature="e#10160#10161#0" expanded="true" />
+            <element signature="e#10198#10199#0" expanded="true" />
+            <element signature="e#10232#10233#0" expanded="true" />
+            <element signature="e#10279#10280#0" expanded="true" />
+            <element signature="e#10315#10316#0" expanded="true" />
+            <element signature="e#10359#10360#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -452,12 +462,12 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#9825#9826#0" expanded="true" />
-            <element signature="e#9863#9864#0" expanded="true" />
-            <element signature="e#9897#9898#0" expanded="true" />
-            <element signature="e#9944#9945#0" expanded="true" />
-            <element signature="e#9980#9981#0" expanded="true" />
-            <element signature="e#10024#10025#0" expanded="true" />
+            <element signature="e#10160#10161#0" expanded="true" />
+            <element signature="e#10198#10199#0" expanded="true" />
+            <element signature="e#10232#10233#0" expanded="true" />
+            <element signature="e#10279#10280#0" expanded="true" />
+            <element signature="e#10315#10316#0" expanded="true" />
+            <element signature="e#10359#10360#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -491,12 +501,12 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#9825#9826#0" expanded="true" />
-            <element signature="e#9863#9864#0" expanded="true" />
-            <element signature="e#9897#9898#0" expanded="true" />
-            <element signature="e#9944#9945#0" expanded="true" />
-            <element signature="e#9980#9981#0" expanded="true" />
-            <element signature="e#10024#10025#0" expanded="true" />
+            <element signature="e#10160#10161#0" expanded="true" />
+            <element signature="e#10198#10199#0" expanded="true" />
+            <element signature="e#10232#10233#0" expanded="true" />
+            <element signature="e#10279#10280#0" expanded="true" />
+            <element signature="e#10315#10316#0" expanded="true" />
+            <element signature="e#10359#10360#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -759,14 +769,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/paxos/Request.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/paxos/State.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
@@ -783,10 +785,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/paxos/PaxosTest.java">
+    <entry file="file://$PROJECT_DIR$/paxos/Request.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-252">
-          <caret line="49" column="0" lean-forward="true" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+        <state relative-caret-position="396">
+          <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -794,25 +796,33 @@
     <entry file="file://$PROJECT_DIR$/paxos/Paxos.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="191">
-          <caret line="207" column="54" lean-forward="false" selection-start-line="207" selection-start-column="54" selection-end-line="207" selection-end-column="54" />
+          <caret line="131" column="42" lean-forward="false" selection-start-line="131" selection-start-column="42" selection-end-line="131" selection-end-column="42" />
           <folding>
-            <element signature="e#9825#9826#0" expanded="true" />
-            <element signature="e#9863#9864#0" expanded="true" />
-            <element signature="e#9897#9898#0" expanded="true" />
-            <element signature="e#9944#9945#0" expanded="true" />
-            <element signature="e#9980#9981#0" expanded="true" />
-            <element signature="e#10024#10025#0" expanded="true" />
+            <element signature="e#10160#10161#0" expanded="true" />
+            <element signature="e#10198#10199#0" expanded="true" />
+            <element signature="e#10232#10233#0" expanded="true" />
+            <element signature="e#10279#10280#0" expanded="true" />
+            <element signature="e#10315#10316#0" expanded="true" />
+            <element signature="e#10359#10360#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/paxos/PaxosRunnble.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="58" column="62" lean-forward="false" selection-start-line="58" selection-start-column="62" selection-end-line="58" selection-end-column="62" />
+        <state relative-caret-position="378">
+          <caret line="61" column="42" lean-forward="false" selection-start-line="61" selection-start-column="42" selection-end-line="61" selection-end-column="42" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/paxos/PaxosTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="316">
+          <caret line="102" column="30" lean-forward="true" selection-start-line="102" selection-start-column="30" selection-end-line="102" selection-end-column="30" />
+          <folding />
         </state>
       </provider>
     </entry>

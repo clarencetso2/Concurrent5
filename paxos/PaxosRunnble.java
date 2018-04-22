@@ -51,15 +51,23 @@ public class PaxosRunnble implements Runnable{
 
                         }
                         for(int j = 0; j < paxos.peers.length; j++) {
-                            Response accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq)), i);
-                            if (accResponse.ack) {
+                            Response accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq)), j);
+                            if (accResponse != null && accResponse.ack) {
                                 count2++;
 
                                 if (count2 > (paxos.peers.length / 2) + 1) {
-                                    printState(localSeq, paxos.states.get(localSeq));
+                                    //printState(localSeq, paxos.states.get(localSeq));
                                     for(int k = 0; k < paxos.peers.length; k++){
                                         Response decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq)), k);
+                                        //System.out.println("i: " + i + " j: " + j + " k: " + k  + " " + paxos.states.get(localSeq));
+//                                        if(decideResponse == null){
+//                                            i++;
+//                                            j++;
+//                                        }
+
                                     }
+
+
                                     i = j = paxos.peers.length;
                                 }
                             }
