@@ -68,15 +68,15 @@ public class PaxosRunnble implements Runnable{
                         else{
                         	localVal = value;
                         }
-                        if(me == 4){
-                         	System.out.println(localVal);
-                         }
-                        if(me ==4){
-                        	System.out.println(prepResponse.acceptNum);
-                        	System.out.println(prepResponse.value);
-                        	System.out.println(max_na);
-                        	
-                        }
+//                        if(me == 4){
+//                         	System.out.println(localVal);
+//                         }
+//                        if(me ==4){
+//                        	System.out.println(prepResponse.acceptNum);
+//                        	System.out.println(prepResponse.value);
+//                        	System.out.println(max_na);
+//                        	
+//                        }
                         for(int j = 0; j < paxos.peers.length; j++) {
                         	Response accResponse; 
                         	if(j == me){
