@@ -124,7 +124,7 @@ public class PaxosTest {
 //
 //    }
 
-    @Test
+   @Test
     public void TestDeaf(){
 
         final int npaxos = 5;

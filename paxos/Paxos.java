@@ -164,7 +164,7 @@ public class Paxos implements PaxosRMI, Runnable{
 
         this.seq = seq;
         this.value = value;
-        PaxosRunnble paxosRunnble = new PaxosRunnble(this, seq, value);
+        PaxosRunnble paxosRunnble = new PaxosRunnble(this, seq, value, me);
         Thread t = new Thread(paxosRunnble);
         t.start();
     }
@@ -177,7 +177,11 @@ public class Paxos implements PaxosRMI, Runnable{
     // RMI handler
     public Response Prepare(Request req){
         //might need to break ties with pid
-
+    	if(proposing.get(req.seq) == null){
+    		proposing.put(req.seq, true);
+    		Start(req.seq, req.value);
+    	}
+    	
         if(accept_n.get(req.seq) == null)
             accept_n.put(req.seq, -1);
         if(proposer_n.get(req.seq) == null){
@@ -207,7 +211,6 @@ public class Paxos implements PaxosRMI, Runnable{
             proposer_n.put(req.seq, req.propNum);
             accept_v.put(req.seq, req.value);
             Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
-
             return response;
         }
 
@@ -217,23 +220,11 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
-        if(broadcasted.get(req.seq) == null){
-            broadcasted.put(req.seq, true);
-
-            for(int k = 0; k < peers.length; k++){
-                Response decideResponse = Call("Decide", new Request(req.seq, req.value, n.get(req.seq)), k);
-
-            }
-
-        }
+       
         //System.out.println("Decide call: " + req.seq);
-        if(states.get(req.seq) != Decided) {
-            states.put(req.seq, Decided);
-            decidedValues.put(req.seq, req.value);
-        }
-
-
-
+        
+        states.put(req.seq, Decided);
+        decidedValues.put(req.seq, req.value);
         return null;
     }
 

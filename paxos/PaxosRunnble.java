@@ -7,13 +7,16 @@ import static paxos.State.Pending;
 
 public class PaxosRunnble implements Runnable{
     int seq;
+    int me;
     Object value;
     Paxos paxos;
 
-    public PaxosRunnble(Paxos p, int s, Object v){
+    
+    public PaxosRunnble(Paxos p, int s, Object v, int m){
         this.seq = s;
         this.value = v;
         this.paxos = p;
+        this.me = m;
     }
 
 
@@ -44,11 +47,17 @@ public class PaxosRunnble implements Runnable{
 
 
 
-
             }
 
             for (int i = 0; i < paxos.peers.length; i++) {
-                Response prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq)), i);
+            	Response prepResponse;
+            	if(i == me){
+            		 prepResponse = paxos.Prepare( new Request(localSeq, localVal, paxos.n.get(localSeq)));
+            	}
+            	else{
+            		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq)), i);
+            	}
+                
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
                     if (count1 > (paxos.peers.length / 2) + 1) {
@@ -57,15 +66,29 @@ public class PaxosRunnble implements Runnable{
 
                         }
                         for(int j = 0; j < paxos.peers.length; j++) {
-                            Response accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq)), j);
+                        	Response accResponse; 
+                        	if(j == me){
+                                accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq)));
+                        		
+                        	}
+                        	else{
+                                accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq)), j);
+
+                        	}
                             if (accResponse != null && accResponse.ack) {
                                 count2++;
 
                                 if (count2 > (paxos.peers.length / 2) + 1) {
                                     //printState(localSeq, paxos.states.get(localSeq));
                                     for(int k = 0; k < paxos.peers.length; k++){
-                                        Response decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq)), k);
+                                    	Response decideResponse;
+                                    	if(k==me){
+                                    		decideResponse = paxos.Decide(new Request(localSeq, localVal, paxos.n.get(localSeq)));
+                                    	}
+                                    	else{
+                                    		decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq)), k);
 
+                                    	}
                                     }
 
 
