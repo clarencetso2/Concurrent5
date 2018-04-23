@@ -10,7 +10,7 @@ public class PaxosRunnble implements Runnable{
     int me;
     Object value;
     Paxos paxos;
-
+    int max_na =-1;
     
     public PaxosRunnble(Paxos p, int s, Object v, int m){
         this.seq = s;
@@ -57,13 +57,25 @@ public class PaxosRunnble implements Runnable{
             	else{
             		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq)), i);
             	}
-                
+            	 
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
-                    if (count1 > (paxos.peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum > paxos.n.get(localSeq) && prepResponse.acceptNum != -1) {
+                    if (count1 >= (paxos.peers.length / 2) + 1) {
+                        if (prepResponse.acceptNum >= max_na && prepResponse.acceptNum != -1) {
                             localVal = prepResponse.value;
-
+                            max_na = prepResponse.acceptNum;
+                        }
+                        else{
+                        	localVal = value;
+                        }
+                        if(me == 4){
+                         	System.out.println(localVal);
+                         }
+                        if(me ==4){
+                        	System.out.println(prepResponse.acceptNum);
+                        	System.out.println(prepResponse.value);
+                        	System.out.println(max_na);
+                        	
                         }
                         for(int j = 0; j < paxos.peers.length; j++) {
                         	Response accResponse; 
@@ -78,7 +90,7 @@ public class PaxosRunnble implements Runnable{
                             if (accResponse != null && accResponse.ack) {
                                 count2++;
 
-                                if (count2 > (paxos.peers.length / 2) + 1) {
+                                if (count2 >= (paxos.peers.length / 2) + 1) {
                                     //printState(localSeq, paxos.states.get(localSeq));
                                     for(int k = 0; k < paxos.peers.length; k++){
                                     	Response decideResponse;

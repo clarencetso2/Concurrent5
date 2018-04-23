@@ -177,10 +177,10 @@ public class Paxos implements PaxosRMI, Runnable{
     // RMI handler
     public Response Prepare(Request req){
         //might need to break ties with pid
-    	if(proposing.get(req.seq) == null){
-    		proposing.put(req.seq, true);
-    		Start(req.seq, req.value);
-    	}
+//    	if(proposing.get(req.seq) == null){
+//    		proposing.put(req.seq, true);
+//    		Start(req.seq, req.value);
+//    	}
     	
         if(accept_n.get(req.seq) == null)
             accept_n.put(req.seq, -1);
@@ -206,6 +206,10 @@ public class Paxos implements PaxosRMI, Runnable{
 
     public Response Accept(Request req){
         // your code here
+//    	if(proposing.get(req.seq) == null){
+//    		proposing.put(req.seq, true);
+//    		Start(req.seq, req.value);
+//    	}
         if(req.propNum >= proposer_n.get(req.seq)) {
             accept_n.put(req.seq, req.propNum);
             proposer_n.put(req.seq, req.propNum);
