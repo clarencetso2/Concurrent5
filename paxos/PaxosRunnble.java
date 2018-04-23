@@ -24,10 +24,12 @@ public class PaxosRunnble implements Runnable{
         int localSeq = seq;
         Object localVal = value;
 
+
         paxos.n.put(localSeq, -1);
         paxos.states.put(localSeq, Pending);
         paxos.accept_n.put(localSeq, -1);
         paxos.accept_v.put(localSeq, -1);
+        paxos.proposer_n.put(localSeq, -1);
 
         int count1 = 0;
         int count2 = 0;
@@ -35,9 +37,14 @@ public class PaxosRunnble implements Runnable{
         //Need to keep track of the state
         while(paxos.states.get(localSeq)!=Decided) {
             synchronized (this) {
-                paxos.lamportClock = paxos.n.get(seq);
+                paxos.lamportClock = paxos.proposer_n.get(seq);
                 paxos.lamportClock++;
                 paxos.n.put(localSeq, paxos.lamportClock);
+                paxos.proposing.put(localSeq, true);
+
+
+
+
             }
 
             for (int i = 0; i < paxos.peers.length; i++) {
@@ -45,8 +52,7 @@ public class PaxosRunnble implements Runnable{
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
                     if (count1 > (paxos.peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum > paxos.n.get(localSeq)) {
-                            paxos.n.put(localSeq, prepResponse.acceptNum);
+                        if (prepResponse.acceptNum > paxos.n.get(localSeq) && prepResponse.acceptNum != -1) {
                             localVal = prepResponse.value;
 
                         }
@@ -59,11 +65,6 @@ public class PaxosRunnble implements Runnable{
                                     //printState(localSeq, paxos.states.get(localSeq));
                                     for(int k = 0; k < paxos.peers.length; k++){
                                         Response decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq)), k);
-                                        //System.out.println("i: " + i + " j: " + j + " k: " + k  + " " + paxos.states.get(localSeq));
-//                                        if(decideResponse == null){
-//                                            i++;
-//                                            j++;
-//                                        }
 
                                     }
 

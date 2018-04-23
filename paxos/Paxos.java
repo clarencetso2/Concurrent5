@@ -50,6 +50,8 @@ public class Paxos implements PaxosRMI, Runnable{
     Map<Integer, Integer> accept_n;
     Map<Integer, Object> accept_v;
     Map<Integer, Integer> n;
+    Map<Integer, Boolean> proposing;
+    Map<Integer, Boolean> broadcasted;
 
 
     /**
@@ -75,6 +77,9 @@ public class Paxos implements PaxosRMI, Runnable{
         this.accept_n = new ConcurrentHashMap<Integer, Integer>();
         this.accept_v = new ConcurrentHashMap<Integer, Object>();
         this.n = new ConcurrentHashMap<Integer, Integer>();
+        this.proposing = new ConcurrentHashMap<Integer, Boolean>();
+        this.broadcasted = new ConcurrentHashMap<Integer, Boolean>();
+
 
 
         this.max = -1;
@@ -106,30 +111,30 @@ public class Paxos implements PaxosRMI, Runnable{
      * this function.
      */
     public Response Call(String rmi, Request req, int id){
-        System.out.println("id: " + id);
+        //System.out.println("id: " + id);
         Response callReply = null;
         PaxosRMI stub;
         try{
             Registry registry=LocateRegistry.getRegistry(this.ports[id]);
             stub=(PaxosRMI) registry.lookup("Paxos");
             if(rmi.equals("Prepare")) {
-                System.out.println("prepare " + id);
+                //System.out.println("prepare " + id);
                 callReply = stub.Prepare(req);
             }
             else if(rmi.equals("Accept")){
-                System.out.println("accept " + id);
+                //System.out.println("accept " + id);
                 callReply = stub.Accept(req);
 
             }
             else if(rmi.equals("Decide")) {
-                System.out.println("decide " + id);
+                //System.out.println("decide " + id);
 
                 callReply = stub.Decide(req);
             }
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
-            System.out.println("EXCEPTION");
+            //System.out.println("EXCEPTION");
             return null;
         }
         return callReply;
@@ -179,7 +184,6 @@ public class Paxos implements PaxosRMI, Runnable{
             proposer_n.put(req.seq, req.propNum);
 //            System.out.println("propNum: " + req.propNum + " acc_n: " + accept_n.get(req.seq) + " acc_v: " + accept_v.get(req.seq));
             Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
-//            System.out.println(response.ack);
             return response;
         }
         if(req.propNum > proposer_n.get(req.seq)) {
@@ -213,12 +217,24 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
+        if(broadcasted.get(req.seq) == null){
+            broadcasted.put(req.seq, true);
+
+            for(int k = 0; k < peers.length; k++){
+                Response decideResponse = Call("Decide", new Request(req.seq, req.value, n.get(req.seq)), k);
+
+            }
+
+        }
         //System.out.println("Decide call: " + req.seq);
+        if(states.get(req.seq) != Decided) {
+            states.put(req.seq, Decided);
+            decidedValues.put(req.seq, req.value);
+        }
 
-        states.put(req.seq, Decided);
-        decidedValues.put(req.seq, req.value);
 
-        return new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+
+        return null;
     }
 
     /**
