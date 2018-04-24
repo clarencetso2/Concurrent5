@@ -2,18 +2,23 @@ package paxos;
 
 import java.rmi.RemoteException;
 
+import paxos.Paxos.retStatus;
+
 import static paxos.State.Decided;
 import static paxos.State.Pending;
 
 public class PaxosRunnble implements Runnable{
     int seq;
+    int me;
     Object value;
     Paxos paxos;
-
-    public PaxosRunnble(Paxos p, int s, Object v){
+    int max_na =-1;
+    
+    public PaxosRunnble(Paxos p, int s, Object v, int m){
         this.seq = s;
         this.value = v;
         this.paxos = p;
+        this.me = m;
     }
 
 
@@ -40,34 +45,53 @@ public class PaxosRunnble implements Runnable{
                 paxos.lamportClock = paxos.proposer_n.get(seq);
                 paxos.lamportClock++;
                 paxos.n.put(localSeq, paxos.lamportClock);
-                paxos.proposing.put(localSeq, true);
-
+          //      paxos.proposing.put(localSeq, true);
 
 
 
             }
 
             for (int i = 0; i < paxos.peers.length; i++) {
-                Response prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq)), i);
+            	Response prepResponse;
+            	if(i == me){
+            		 prepResponse = paxos.Prepare( new Request(localSeq, localVal, paxos.n.get(localSeq), me));
+            	}
+            	else{
+            		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq),me), i);
+            	}
+            	 
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
-                    if (count1 > (paxos.peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum > paxos.n.get(localSeq) && prepResponse.acceptNum != -1) {
+                    if (count1 >= (paxos.peers.length / 2) + 1) {
+                        if (prepResponse.acceptNum >= max_na && prepResponse.acceptNum != -1) {
                             localVal = prepResponse.value;
-
+                            max_na = prepResponse.acceptNum;
                         }
+                        
+                        
                         for(int j = 0; j < paxos.peers.length; j++) {
-                            Response accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq)), j);
+                        	Response accResponse; 
+                        	if(j == me){
+                                accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq),me));
+                        		
+                        	}
+                        	else{
+                                accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq), me), j);
+
+                        	}
                             if (accResponse != null && accResponse.ack) {
                                 count2++;
-
-                                if (count2 > (paxos.peers.length / 2) + 1) {
+                                if (count2 >= (paxos.peers.length / 2) + 1) {
                                     //printState(localSeq, paxos.states.get(localSeq));
                                     for(int k = 0; k < paxos.peers.length; k++){
-                                        Response decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq)), k);
-
+                                    	Response decideResponse;
+                                    	if(k==me){
+                                    		decideResponse = paxos.Decide(new Request(localSeq, localVal, paxos.n.get(localSeq), me));
+                                    	}
+                                    	else{
+                                    		decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq), me), k);
+                                    	}
                                     }
-
 
                                     i = j = paxos.peers.length;
                                 }
@@ -80,7 +104,7 @@ public class PaxosRunnble implements Runnable{
         //call Done(localSeq)
 
 
-        //retStatus status = Status(localSeq);
+       retStatus status = paxos.Status(localSeq);
 
     }
 
