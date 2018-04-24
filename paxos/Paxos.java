@@ -134,7 +134,7 @@ public class Paxos implements PaxosRMI, Runnable{
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
-            //System.out.println("EXCEPTION");
+            //System.out.println("EXCEPTION: " + e);
             return null;
         }
         return callReply;
@@ -181,25 +181,29 @@ public class Paxos implements PaxosRMI, Runnable{
 //    		proposing.put(req.seq, true);
 //    		Start(req.seq, req.value);
 //    	}
+
+        if(this.Status(req.seq).state == Decided){
+            return new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq), true);
+        }
     	
         if(accept_n.get(req.seq) == null)
             accept_n.put(req.seq, -1);
         if(proposer_n.get(req.seq) == null){
             proposer_n.put(req.seq, req.propNum);
 //            System.out.println("propNum: " + req.propNum + " acc_n: " + accept_n.get(req.seq) + " acc_v: " + accept_v.get(req.seq));
-            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
             return response;
         }
         if(req.propNum > proposer_n.get(req.seq)) {
             proposer_n.put(req.seq, req.propNum);
-            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
 
             return response;
         }
 
         else{
 
-            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
 
         }
     }
@@ -214,12 +218,12 @@ public class Paxos implements PaxosRMI, Runnable{
             accept_n.put(req.seq, req.propNum);
             proposer_n.put(req.seq, req.propNum);
             accept_v.put(req.seq, req.value);
-            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
             return response;
         }
 
         else{
-            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq), false);
         }
     }
 

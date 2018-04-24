@@ -59,7 +59,9 @@ public class PaxosRunnble implements Runnable{
             	else{
             		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq),me), i);
             	}
-            	 
+            	if(prepResponse != null && prepResponse.decided){
+            	    paxos.accept_v.put(localSeq, prepResponse.value);
+                }
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
                     if (count1 >= (paxos.peers.length / 2) + 1) {

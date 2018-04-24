@@ -13,13 +13,15 @@ public class Response implements Serializable {
     int propNum;
     Object value;
     int acceptNum;
+    boolean decided;
     
 
     // Your constructor and methods here
-    public Response(boolean ack, int propNum, int acceptNum, Object value){
+    public Response(boolean ack, int propNum, int acceptNum, Object value, boolean decided){
         this.ack = ack;
         this.propNum = propNum;
         this.value = value;
         this.acceptNum = acceptNum;
+        this.decided = decided;
     }
 }
