@@ -2,7 +2,10 @@ package paxos;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static paxos.State.Decided;
@@ -13,7 +16,8 @@ import static paxos.State.Pending;
  */
 public class Paxos implements PaxosRMI, Runnable{
 
-    ReentrantLock mutex;
+    ReentrantLock mutex = new ReentrantLock();
+    Condition condition = mutex.newCondition();
     String[] peers; // hostname
     int[] ports; // host port
     int me; // index into peers[]
@@ -30,13 +34,24 @@ public class Paxos implements PaxosRMI, Runnable{
     // Your data here
     int seq;
     Object value;
-    State state;
 
     int highestPrepare = -1;
     int highestAccept = -1;
 
+    int max;
+    int min;
+
     Object highestValueAcceptor = null;
     Object highestValueProposer = null;
+
+    Map<Integer, Object> decidedValues;
+    Map<Integer, Integer> proposer_n;
+    Map<Integer, State> states;
+    Map<Integer, Integer> accept_n;
+    Map<Integer, Object> accept_v;
+    Map<Integer, Integer> n;
+    Map<Integer, Boolean> proposing;
+    Map<Integer, Boolean> broadcasted;
 
 
     /**
@@ -55,7 +70,20 @@ public class Paxos implements PaxosRMI, Runnable{
 
         // Your initialization code here
         this.lamportClock = 0;
-        this.state = Pending;
+
+        this.decidedValues = new ConcurrentHashMap<Integer,Object>();
+        this.proposer_n = new ConcurrentHashMap<Integer, Integer>();
+        this.states = new ConcurrentHashMap<Integer, State>();
+        this.accept_n = new ConcurrentHashMap<Integer, Integer>();
+        this.accept_v = new ConcurrentHashMap<Integer, Object>();
+        this.n = new ConcurrentHashMap<Integer, Integer>();
+        this.proposing = new ConcurrentHashMap<Integer, Boolean>();
+        this.broadcasted = new ConcurrentHashMap<Integer, Boolean>();
+
+
+
+        this.max = -1;
+        this.min = -1;
 
         // register peers, do not modify this part
         try{
@@ -83,21 +111,30 @@ public class Paxos implements PaxosRMI, Runnable{
      * this function.
      */
     public Response Call(String rmi, Request req, int id){
+        //System.out.println("id: " + id);
         Response callReply = null;
-
         PaxosRMI stub;
         try{
             Registry registry=LocateRegistry.getRegistry(this.ports[id]);
             stub=(PaxosRMI) registry.lookup("Paxos");
-            if(rmi.equals("Prepare"))
+            if(rmi.equals("Prepare")) {
+                //System.out.println("prepare " + id);
                 callReply = stub.Prepare(req);
-            else if(rmi.equals("Accept"))
+            }
+            else if(rmi.equals("Accept")){
+                //System.out.println("accept " + id);
                 callReply = stub.Accept(req);
-            else if(rmi.equals("Decide"))
+
+            }
+            else if(rmi.equals("Decide")) {
+                //System.out.println("decide " + id);
+
                 callReply = stub.Decide(req);
+            }
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
+            //System.out.println("EXCEPTION");
             return null;
         }
         return callReply;
@@ -122,85 +159,76 @@ public class Paxos implements PaxosRMI, Runnable{
      * is reached.
      */
     public void Start(int seq, Object value){
+
         // Your code here
+
         this.seq = seq;
         this.value = value;
-        Thread t = new Thread(this);
+        PaxosRunnble paxosRunnble = new PaxosRunnble(this, seq, value, me);
+        Thread t = new Thread(paxosRunnble);
         t.start();
     }
 
     @Override
     public void run(){
-        //Your code here
-        int localSeq = seq;
-        Object localVal = value;
 
-        int count1 = 0;
-        int count2 = 0;
-
-        //Need to keep track of the state
-        while(state!=Decided) {
-            synchronized (this) {
-                lamportClock++;
-            }
-
-            for (int i = 0; i < peers.length; i++) {
-                Response response = Call("Prepare", new Request(localSeq, localVal, lamportClock), i); //TODO: MAKE CONSTRUCTOR FOR REQUEST, SEND LAMPORTCLOCK WITH REQUEST
-                if (response.ack) {
-                    count1++;
-                    if (count1 > (peers.length / 2) + 1) {
-                        if (response.acceptNum > highestPrepare) {
-                            highestPrepare = response.acceptNum;
-                            highestValueProposer = response.value;
-
-                        }
-                        Response response2 = Call("Accept", new Request(localSeq, highestValueProposer, highestPrepare), i);
-                        if (response2.ack) {
-                            count2++;
-                            if (count2 > (peers.length / 2) + 1) {
-                                Call("Decide", new Request(localSeq, highestValueProposer, highestPrepare), i);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        retStatus status = Status(localSeq);
     }
 
     // RMI handler
     public Response Prepare(Request req){
         //might need to break ties with pid
-        if(req.propNum > highestPrepare) {
-            highestPrepare = req.propNum;
-            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+//    	if(proposing.get(req.seq) == null && this.me != req.me && this.me != 0){
+//    		proposing.put(req.seq, true);
+//    		Start(req.seq, req.value);
+//    	}
+    	
+        if(accept_n.get(req.seq) == null)
+            accept_n.put(req.seq, -1);
+        if(proposer_n.get(req.seq) == null){
+            proposer_n.put(req.seq, req.propNum);
+//            System.out.println("propNum: " + req.propNum + " acc_n: " + accept_n.get(req.seq) + " acc_v: " + accept_v.get(req.seq));
+            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            return response;
+        }
+        if(req.propNum > proposer_n.get(req.seq)) {
+            proposer_n.put(req.seq, req.propNum);
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+
             return response;
         }
 
         else{
-            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+
         }
     }
 
     public Response Accept(Request req){
         // your code here
-        if(req.propNum > highestPrepare) {
-            highestAccept = req.propNum;
-            highestPrepare = req.propNum;
-            highestValueAcceptor = req.value;
-            Response response = new Response(true, highestPrepare, highestAccept, highestValueAcceptor);
+//    	if(proposing.get(req.seq) == null){
+//    		proposing.put(req.seq, true);
+//    		Start(req.seq, req.value);
+//    	}
+        if(req.propNum >= proposer_n.get(req.seq)) {
+            accept_n.put(req.seq, req.propNum);
+            proposer_n.put(req.seq, req.propNum);
+            accept_v.put(req.seq, req.value);
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
             return response;
         }
 
         else{
-            return new Response(false, highestPrepare, highestAccept, highestValueAcceptor);
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
         }
     }
 
     public Response Decide(Request req){
-        state = Decided;
-
+    	
+        //System.out.println("Decide call: " + req.seq);
+        
+        states.put(req.seq, Decided);
+        decidedValues.put(req.seq, req.value);
         return null;
     }
 
@@ -212,6 +240,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public void Done(int seq) {
         // Your code here
+
     }
 
 
@@ -270,8 +299,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public retStatus Status(int seq){
         // Your code here
-
-        return null;
+        return new retStatus(states.get(seq), decidedValues.get(seq));
     }
 
     /**
