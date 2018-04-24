@@ -54,10 +54,10 @@ public class PaxosRunnble implements Runnable{
             for (int i = 0; i < paxos.peers.length; i++) {
             	Response prepResponse;
             	if(i == me){
-            		 prepResponse = paxos.Prepare( new Request(localSeq, localVal, paxos.n.get(localSeq), me));
+            		 prepResponse = paxos.Prepare( new Request(localSeq, localVal, paxos.n.get(localSeq), me, paxos.highestDone.get(me)));
             	}
             	else{
-            		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq),me), i);
+            		 prepResponse = paxos.Call("Prepare", new Request(localSeq, localVal, paxos.n.get(localSeq),me,paxos.highestDone.get(me)), i);
             	}
             	if(prepResponse != null && prepResponse.decided){
             	    paxos.accept_v.put(localSeq, prepResponse.value);
@@ -74,11 +74,11 @@ public class PaxosRunnble implements Runnable{
                         for(int j = 0; j < paxos.peers.length; j++) {
                         	Response accResponse; 
                         	if(j == me){
-                                accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq),me));
+                                accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq),me, paxos.highestDone.get(me)));
                         		
                         	}
                         	else{
-                                accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq), me), j);
+                                accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq), me,paxos.highestDone.get(me)), j);
 
                         	}
                             if (accResponse != null && accResponse.ack) {
@@ -88,10 +88,10 @@ public class PaxosRunnble implements Runnable{
                                     for(int k = 0; k < paxos.peers.length; k++){
                                     	Response decideResponse;
                                     	if(k==me){
-                                    		decideResponse = paxos.Decide(new Request(localSeq, localVal, paxos.n.get(localSeq), me));
+                                    		decideResponse = paxos.Decide(new Request(localSeq, localVal, paxos.n.get(localSeq), me, paxos.highestDone.get(me)));
                                     	}
                                     	else{
-                                    		decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq), me), k);
+                                    		decideResponse = paxos.Call("Decide", new Request(localSeq, localVal, paxos.n.get(localSeq), me,paxos.highestDone.get(me)), k);
                                     	}
                                     }
 
@@ -106,7 +106,7 @@ public class PaxosRunnble implements Runnable{
         //call Done(localSeq)
 
 
-       retStatus status = paxos.Status(localSeq);
+      // retStatus status = paxos.Status(localSeq);
 
     }
 
