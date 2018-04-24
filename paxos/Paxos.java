@@ -177,7 +177,7 @@ public class Paxos implements PaxosRMI, Runnable{
     // RMI handler
     public Response Prepare(Request req){
         //might need to break ties with pid
-//    	if(proposing.get(req.seq) == null){
+//    	if(proposing.get(req.seq) == null && this.me != req.me && this.me != 0){
 //    		proposing.put(req.seq, true);
 //    		Start(req.seq, req.value);
 //    	}
@@ -224,7 +224,7 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
-       
+    	
         //System.out.println("Decide call: " + req.seq);
         
         states.put(req.seq, Decided);

@@ -13,7 +13,7 @@ public class Response implements Serializable {
     int propNum;
     Object value;
     int acceptNum;
-
+    
 
     // Your constructor and methods here
     public Response(boolean ack, int propNum, int acceptNum, Object value){
