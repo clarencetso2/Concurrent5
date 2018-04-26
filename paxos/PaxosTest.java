@@ -124,45 +124,45 @@ public class PaxosTest {
 
     }
 
-//   @Test
-//    public void TestDeaf(){
-//
-//        final int npaxos = 5;
-//        Paxos[] pxa = initPaxos(npaxos);
-//
-//        System.out.println("Test: Deaf proposer ...");
-//        pxa[0].Start(0, "hello");
-//        waitn(pxa, 0, npaxos);
-//
-//        pxa[1].ports[0]= 1;
-//        pxa[1].ports[npaxos-1]= 1;
-//        pxa[1].Start(1, "goodbye");
-//        waitmajority(pxa, 1);
-//        try {
-//            Thread.sleep(1000);
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        int nd = ndecided(pxa, 1);
-//        assertFalse("a deaf peer heard about a decision " + nd, nd != npaxos-2);
-//
-//        System.out.println("Beginning failed test.");
-//        pxa[0].Start(1, "xxx");
-//        waitn(pxa, 1, npaxos-1);
-//        try {
-//            Thread.sleep(1000);
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        nd = ndecided(pxa, 1);
-//        assertFalse("a deaf peer heard about a decision " + nd, nd != npaxos-1);
-//
-//        pxa[npaxos-1].Start(1, "yyy");
-//        waitn(pxa, 1, npaxos);
-//        System.out.println("... Passed");
-//        cleanup(pxa);
-//
-//    }
+   @Test
+    public void TestDeaf(){
+
+        final int npaxos = 5;
+        Paxos[] pxa = initPaxos(npaxos);
+
+        System.out.println("Test: Deaf proposer ...");
+        pxa[0].Start(0, "hello");
+        waitn(pxa, 0, npaxos);
+
+        pxa[1].ports[0]= 1;
+        pxa[1].ports[npaxos-1]= 1;
+        pxa[1].Start(1, "goodbye");
+        waitmajority(pxa, 1);
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        int nd = ndecided(pxa, 1);
+        assertFalse("a deaf peer heard about a decision " + nd, nd != npaxos-2);
+
+        System.out.println("Beginning failed test.");
+        pxa[0].Start(1, "xxx");
+        waitn(pxa, 1, npaxos-1);
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        nd = ndecided(pxa, 1);
+        assertFalse("a deaf peer heard about a decision " + nd, nd != npaxos-1);
+
+        pxa[npaxos-1].Start(1, "yyy");
+        waitn(pxa, 1, npaxos);
+        System.out.println("... Passed");
+        cleanup(pxa);
+
+    }
 
 //    @Test
 //    public void TestForget(){

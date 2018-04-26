@@ -52,7 +52,7 @@ public class Paxos implements PaxosRMI, Runnable{
     Map<Integer, Integer> n;
     Map<Integer, Boolean> proposing;
     Map<Integer, Boolean> broadcasted;
-
+    Map<Integer, Integer> highestDone;
 
     /**
      * Call the constructor to create a Paxos peer.
@@ -79,8 +79,12 @@ public class Paxos implements PaxosRMI, Runnable{
         this.n = new ConcurrentHashMap<Integer, Integer>();
         this.proposing = new ConcurrentHashMap<Integer, Boolean>();
         this.broadcasted = new ConcurrentHashMap<Integer, Boolean>();
+        this.highestDone = new ConcurrentHashMap<Integer,Integer>();
 
-
+        //initialize hashmap
+        for(int i = 0; i < peers.length; i++){
+        	highestDone.put(i, -1);
+        }
 
         this.max = -1;
         this.min = -1;
@@ -134,7 +138,7 @@ public class Paxos implements PaxosRMI, Runnable{
             else
                 System.out.println("Wrong parameters!");
         } catch(Exception e){
-            //System.out.println("EXCEPTION");
+            //System.out.println("EXCEPTION: " + e);
             return null;
         }
         return callReply;
@@ -181,25 +185,30 @@ public class Paxos implements PaxosRMI, Runnable{
 //    		proposing.put(req.seq, true);
 //    		Start(req.seq, req.value);
 //    	}
+    	highestDone.put(req.me, req.doneValue);
+
+        if(this.Status(req.seq).state == Decided){
+            return new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq), true);
+        }
     	
         if(accept_n.get(req.seq) == null)
             accept_n.put(req.seq, -1);
         if(proposer_n.get(req.seq) == null){
             proposer_n.put(req.seq, req.propNum);
 //            System.out.println("propNum: " + req.propNum + " acc_n: " + accept_n.get(req.seq) + " acc_v: " + accept_v.get(req.seq));
-            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response =  new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
             return response;
         }
         if(req.propNum > proposer_n.get(req.seq)) {
             proposer_n.put(req.seq, req.propNum);
-            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
 
             return response;
         }
 
         else{
 
-            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
 
         }
     }
@@ -210,16 +219,18 @@ public class Paxos implements PaxosRMI, Runnable{
 //    		proposing.put(req.seq, true);
 //    		Start(req.seq, req.value);
 //    	}
+    	highestDone.put(req.me, req.doneValue);
+
         if(req.propNum >= proposer_n.get(req.seq)) {
             accept_n.put(req.seq, req.propNum);
             proposer_n.put(req.seq, req.propNum);
             accept_v.put(req.seq, req.value);
-            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            Response response = new Response(true, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq),false);
             return response;
         }
 
         else{
-            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq));
+            return new Response(false, req.propNum, accept_n.get(req.seq), accept_v.get(req.seq), false);
         }
     }
 
@@ -240,7 +251,10 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public void Done(int seq) {
         // Your code here
-
+    	if(seq > highestDone.get(me)){
+    		highestDone.put(me, seq);
+    		
+    	}
     }
 
 
@@ -251,7 +265,12 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public int Max(){
         // Your code here
-        return 0;
+    	int maxSequenceNumber = -1;
+        for(int s: decidedValues.keySet()) {
+            if(s > maxSequenceNumber)
+                maxSequenceNumber = s;
+        }
+        return maxSequenceNumber;
     }
 
     /**
@@ -284,8 +303,14 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public int Min(){
         // Your code here
+    	int min = Integer.MAX_VALUE;
+    	for(int s: highestDone.keySet()){
+    		if(highestDone.get(s) < min){
+    			min = highestDone.get(s);
+    		}
+    	}
 
-        return 0;
+        return min+1;
     }
 
 
@@ -299,6 +324,9 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public retStatus Status(int seq){
         // Your code here
+    	if(seq < Min() || !states.containsKey(seq)){
+    		return new retStatus(State.Forgotten, null);
+    	}
         return new retStatus(states.get(seq), decidedValues.get(seq));
     }
 
