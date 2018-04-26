@@ -67,6 +67,9 @@ public class PaxosRunnble implements Runnable{
                             localVal = prepResponse.value;
                             max_na = prepResponse.acceptNum;
                         }
+                        if(me == 0 || me == 4){
+                            //print out local vals and acceptnums
+                        }
                         
                         
                         for(int j = 0; j < paxos.peers.length; j++) {
