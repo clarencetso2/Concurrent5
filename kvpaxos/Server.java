@@ -25,6 +25,7 @@ public class Server implements KVPaxosRMI {
     // Your definitions here
 
     Map<Integer, Object> log;
+    int seq;
 
 
 
@@ -62,8 +63,8 @@ public class Server implements KVPaxosRMI {
         // Your code here
         //paxos log???
         //add a Put Op to the log
-        //start a Paxos instance (use Op)
-        //value is the key/value pair
+        //Paxos.Start(req.seq, req.op);
+
         return null;
     }
 

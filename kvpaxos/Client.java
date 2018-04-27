@@ -12,7 +12,9 @@ public class Client {
 
     // Your data here
 
-    static int id = 0;
+    static int id = -1;
+    int clientSeq =-1;
+
 
 
     public Client(String[] servers, int[] ports){
@@ -56,15 +58,18 @@ public class Client {
     // RMI handlers CALLERS
     public Integer Get(String key){
         // Your code here
-        //create a request, use Call() to contact server
+
         return null;
     }
 
     public boolean Put(String key, Integer value){
         // Your code here
-        Response getResponse = Call("Put", new Request(new Op("Put", <FIGURE THIS OUT>, key, value)), <FIGURE THIS OUT>);
+        //broadcast call?
+        for(int i = 0; i < servers.length; i++) {
+            Response getResponse = Call("Put", new Request(new Op("Put", < FIGURE THIS OUT >, key, value)), i);
+        }
 
-        //create a request, use Call() to contact server
+        // create a request, use Call() to contact server
         return false;
     }
 
