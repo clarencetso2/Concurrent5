@@ -47,11 +47,7 @@ public class PaxosRunnble implements Runnable{
                 paxos.lamportClock = paxos.proposer_n.get(seq);
                 paxos.lamportClock++;
                 paxos.n.put(localSeq, paxos.lamportClock);
-        //      paxos.proposing.put(localSeq, true);
 
-
-
-            // recieved n , received value, update it
             
             ////////////////////////////////Phase 1///////////////////////////////////////////////////////
             for (int i = 0; i < paxos.peers.length; i++) {
@@ -70,22 +66,6 @@ public class PaxosRunnble implements Runnable{
 
                 if (prepResponse != null && prepResponse.ack) {
                     count1++;
-<<<<<<< HEAD
-                    if (count1 >= (paxos.peers.length / 2) + 1) {
-                        if (prepResponse.acceptNum >= max_na && prepResponse.acceptNum != -1) {
-                            localVal = prepResponse.value;
-                            max_na = prepResponse.acceptNum;
-                        }
-                        if(me == 0 || me == 4){
-                            //print out local vals and acceptnums
-                        }
-                        
-                        
-                        for(int j = 0; j < paxos.peers.length; j++) {
-                        	Response accResponse; 
-                        	if(j == me){
-                                accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq),me));
-=======
                 }
             }
                     
@@ -100,8 +80,7 @@ public class PaxosRunnble implements Runnable{
                 	Response accResponse; 
                    	if(j == me){
                    		accResponse = paxos.Accept(new Request(localSeq, localVal, paxos.n.get(localSeq),me, paxos.highestDone.get(me)));
->>>>>>> 0cb55f22f022151b3f26a090baef4235e8777df8
-                        		
+
                     }
                     else{
                         accResponse = paxos.Call("Accept", new Request(localSeq, localVal, paxos.n.get(localSeq), me,paxos.highestDone.get(me)), j);
@@ -129,20 +108,6 @@ public class PaxosRunnble implements Runnable{
         }
     }
 
-
-                        
-                        
-                        
-                        
-                        
-                            
-        
-       //call Done(localSeq)
-
-
-      //retStatus status = paxos.Status(localSeq);
-
-    
 
     public void printState(int s, State state){
         if(state == Decided){

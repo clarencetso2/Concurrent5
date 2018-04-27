@@ -2,6 +2,8 @@ package kvpaxos;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Client {
@@ -10,11 +12,14 @@ public class Client {
 
     // Your data here
 
+    static int id = 0;
+
 
     public Client(String[] servers, int[] ports){
         this.servers = servers;
         this.ports = ports;
         // Your initialization code here
+        this.id = id + 1;
     }
 
     /**
@@ -48,15 +53,18 @@ public class Client {
         return callReply;
     }
 
-    // RMI handlers
+    // RMI handlers CALLERS
     public Integer Get(String key){
         // Your code here
-
+        //create a request, use Call() to contact server
         return null;
     }
 
     public boolean Put(String key, Integer value){
         // Your code here
+        Response getResponse = Call("Put", new Request(new Op("Put", <FIGURE THIS OUT>, key, value)), <FIGURE THIS OUT>);
+
+        //create a request, use Call() to contact server
         return false;
     }
 

@@ -6,7 +6,10 @@ import paxos.State;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+
 
 public class Server implements KVPaxosRMI {
 
@@ -21,6 +24,9 @@ public class Server implements KVPaxosRMI {
 
     // Your definitions here
 
+    Map<Integer, Object> log;
+
+
 
     public Server(String[] servers, int[] ports, int me){
         this.me = me;
@@ -30,6 +36,7 @@ public class Server implements KVPaxosRMI {
         this.px = new Paxos(me, servers, ports);
         // Your initialization code here
 
+        this.log = new ConcurrentHashMap<Integer, Object>();
 
 
         try{
@@ -46,15 +53,43 @@ public class Server implements KVPaxosRMI {
     // RMI handlers
     public Response Get(Request req){
         // Your code here
+        //enter a Get Op to the log
 
         return null;
     }
 
     public Response Put(Request req){
         // Your code here
-
+        //paxos log???
+        //add a Put Op to the log
+        //start a Paxos instance (use Op)
+        //value is the key/value pair
         return null;
     }
 
+    public Op wait(int seq){
+        int to = 10;
+        while(true)
+        {
+            Paxos.retStatus ret = this.px.Status(seq);
+            if(ret.state == State.Decided){
+                return Op.class.cast(ret.v);
+            }
+            try
+            {
+                try {
+                    Thread.sleep(to);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+            if(to < 1000){
+                to *= 2;
+            }
+        }
+    }
 
 }
