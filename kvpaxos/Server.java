@@ -6,7 +6,9 @@ import paxos.State;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -24,7 +26,7 @@ public class Server implements KVPaxosRMI {
 
     // Your definitions here
 
-    Map<Integer, Object> log;
+    Map<String, Integer> logData;
     int seq;
 
 
@@ -37,7 +39,8 @@ public class Server implements KVPaxosRMI {
         this.px = new Paxos(me, servers, ports);
         // Your initialization code here
 
-        this.log = new ConcurrentHashMap<Integer, Object>();
+        this.logData = new ConcurrentHashMap<String, Integer>();
+        seq = 0;
 
 
         try{
@@ -54,30 +57,43 @@ public class Server implements KVPaxosRMI {
     // RMI handlers
     public Response Get(Request req){
         // Your code here
-        //enter a Get Op to the log
-
-        return null;
+        px.Start(seq, req.op);
+        Op getResponse = wait(seq);
+        while(!getResponse.key.equals(req.op.key)) {
+            if (logData.containsKey(req.op.key)) {
+                return new Response(req.op.key, logData.get(req.op.key), seq);
+            } else {
+                Update();
+                seq++;
+                px.Start(seq, req.op);
+                getResponse = wait(seq);
+            }
+        }
+        return new Response(getResponse.key, getResponse.value, seq);
     }
 
     public Response Put(Request req){
         // Your code here
-        //paxos log???
-        //add a Put Op to the log
-        //Paxos.Start(req.seq, req.op);
-
-        return null;
+        seq = px.Max() + 1;
+        px.Start(seq, req.op);
+        Op putResponse = wait(seq);
+        while(!putResponse.key.equals(req.op.key)){
+            seq++;
+            px.Start(seq, req.op);
+            putResponse = wait(seq);
+        }
+        logData.put(putResponse.key, putResponse.value);
+        return new Response(putResponse.key, putResponse.value, seq);
     }
 
     public Op wait(int seq){
         int to = 10;
-        while(true)
-        {
+        while(true) {
             Paxos.retStatus ret = this.px.Status(seq);
             if(ret.state == State.Decided){
                 return Op.class.cast(ret.v);
             }
-            try
-            {
+            try {
                 try {
                     Thread.sleep(to);
                 } catch (InterruptedException e) {
@@ -93,4 +109,24 @@ public class Server implements KVPaxosRMI {
         }
     }
 
+    public void Update(){
+        Set<Integer> decidedSeq = new HashSet<Integer>();
+        for(int seqNum : px.states.keySet()){
+            if(px.states.get(seqNum) == State.Decided)
+                decidedSeq.add(seqNum);
+        }
+        for(int seqNum : decidedSeq) {
+            Op retOp = (Op) px.decidedValues.get(seqNum);
+            if (retOp.op.equals("Put"))
+                logData.put(retOp.key, retOp.value);
+            px.decidedValues.remove(seqNum);
+            px.proposer_n.remove(seqNum);
+            px.accept_v.remove(seqNum);
+            px.accept_n.remove(seqNum);
+            px.n.remove(seqNum);
+            px.highestDone.remove(seqNum);
+            px.states.put(seqNum, State.Forgotten);
+            px.Done(seqNum);
+        }
+    }
 }

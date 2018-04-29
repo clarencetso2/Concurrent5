@@ -44,15 +44,15 @@ public class Paxos implements PaxosRMI, Runnable{
     Object highestValueAcceptor = null;
     Object highestValueProposer = null;
 
-    Map<Integer, Object> decidedValues;
-    Map<Integer, Integer> proposer_n;
-    Map<Integer, State> states;
-    Map<Integer, Integer> accept_n;
-    Map<Integer, Object> accept_v;
-    Map<Integer, Integer> n;
-    Map<Integer, Boolean> proposing;
-    Map<Integer, Boolean> broadcasted;
-    Map<Integer, Integer> highestDone;
+    public Map<Integer, Object> decidedValues;
+    public Map<Integer, Integer> proposer_n;
+    public Map<Integer, State> states;
+    public Map<Integer, Integer> accept_n;
+    public Map<Integer, Object> accept_v;
+    public Map<Integer, Integer> n;
+    public Map<Integer, Boolean> proposing;
+    public Map<Integer, Boolean> broadcasted;
+    public Map<Integer, Integer> highestDone;
 
     /**
      * Call the constructor to create a Paxos peer.

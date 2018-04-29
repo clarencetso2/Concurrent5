@@ -9,6 +9,15 @@ import java.io.Serializable;
 public class Response implements Serializable {
     static final long serialVersionUID=22L;
     // your data here
+    String key;
+    Integer value;
+    int seq;
+
+    public Response(String key, Integer value, int seq){
+        this.key = key;
+        this.value = value;
+        this.seq = seq;
+    }
 
 
     // Your constructor and methods here

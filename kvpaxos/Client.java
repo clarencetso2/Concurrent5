@@ -58,19 +58,25 @@ public class Client {
     // RMI handlers CALLERS
     public Integer Get(String key){
         // Your code here
+        Op op = new Op("Get", clientSeq, key, 0);
+        Response getResponse=null;
 
-        return null;
+        for(int i = 0; getResponse == null; i= (i+1)%servers.length) {
+            getResponse = Call("Get", new Request(op), i);
+        }
+        return getResponse.value;
     }
 
     public boolean Put(String key, Integer value){
         // Your code here
-        //broadcast call?
-        for(int i = 0; i < servers.length; i++) {
-            Response getResponse = Call("Put", new Request(new Op("Put", < FIGURE THIS OUT >, key, value)), i);
+        Response putResponse=null;
+        Op op = new Op("Put", id, key, value);
+        for(int i = 0; putResponse == null; i= (i+1)%servers.length) {
+            //System.out.println(i);
+            putResponse = Call("Put", new Request(op), i);
         }
 
-        // create a request, use Call() to contact server
-        return false;
+        return true;
     }
 
 }
